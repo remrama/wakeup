@@ -74,11 +74,11 @@ morning_df["ParticipantID"] = morning_df["ParticipantID"].astype(int)
 
 # Regular LUSK from initial survey
 lusk_columns = [ c for c in initial_df if c.startswith("LUSK") ]
-initial_df["LUSK"] = initial_df[lusk_columns].mean(axis=1)
+initial_df["LUSK"] = initial_df[lusk_columns].sum(axis=1)
 
 # Dream-specific LUSK from morning report
 dream_lusk_columns = [ c for c in morning_df if c.startswith("Dream_LUSK") ]
-morning_df["Dream_LUSK"] = morning_df[dream_lusk_columns].mean(axis=1)
+morning_df["Dream_LUSK"] = morning_df[dream_lusk_columns].sum(axis=1)
 
 # Dream-specific PANAS from morning report
 POS_PANAS = [1, 3, 5, 9, 10, 12, 14, 16, 17, 19]
