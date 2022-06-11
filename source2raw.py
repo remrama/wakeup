@@ -161,15 +161,17 @@ for col in df:
         column_info["Probe"] = morning_meta.column_names_to_labels[col]
     # Get response option strings (if present).
     if col in initial_meta.variable_value_labels:
-        column_info["Levels"] = initial_meta.variable_value_labels[col]
+        levels = initial_meta.variable_value_labels[col]
+        column_info["Levels"] = { int(k): v for k, v in levels.items() }
     elif col in morning_meta.variable_value_labels:
-        column_info["Levels"] = morning_meta.variable_value_labels[col]
+        levels = morning_meta.variable_value_labels[col]
+        column_info["Levels"] = { int(k): v for k, v in levels.items() }
     
     if column_info:
         sidecar[col] = column_info
 
 # Export.
 df.to_csv(export_path_data, sep="\t",
-    index=True, na_rep="n/a", float_format="%.1f")
+    index=True, na_rep="n/a", float_format="%.0f")
 with open(export_path_sidecar, "w", encoding="utf-8") as fp:
     json.dump(sidecar, fp, indent=4, sort_keys=False, ensure_ascii=True)
