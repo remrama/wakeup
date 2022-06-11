@@ -3,12 +3,14 @@
 Takes the 2 Qualtrics outputs in SPSS format and merges to a tsv.
 """
 
+import json
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
 import utils
+
 
 
 config = utils.load_config()
@@ -19,7 +21,8 @@ round2_end = config["round2_end_timestamp"]
 
 # Choose export path.
 root_dir = Path(config["root_directory"])
-export_path = root_dir / "derivatives" / "data.tsv"
+export_path_data = root_dir / "derivatives" / "data.tsv"
+export_path_sidecar = export_path_data.with_suffix(".json")
 
 # Load all data and metadata.
 initial_df, initial_meta = utils.load_qualtrics_source("initial")
@@ -82,8 +85,8 @@ POS_PANAS = [1, 3, 5, 9, 10, 12, 14, 16, 17, 19]
 panas_columns = [ c for c in morning_df if c.startswith("PANAS") ]
 pos_panas_columns = [ c for c in panas_columns if int(c.split("_")[-1]) in POS_PANAS ]
 neg_panas_columns = [ c for c in panas_columns if c not in pos_panas_columns ]
-morning_df["PANAS_pos"] = morning_df[pos_panas_columns].add(1).sum(axis=1)
-morning_df["PANAS_neg"] = morning_df[neg_panas_columns].add(1).sum(axis=1)
+morning_df["PANAS_pos"] = morning_df[pos_panas_columns].sum(axis=1)
+morning_df["PANAS_neg"] = morning_df[neg_panas_columns].sum(axis=1)
 print("not accounting for NaNs in agg survey scores")
 
 
@@ -140,6 +143,33 @@ df = df.drop(columns=DROP_COLUMNS)
 df = df.drop(columns=lusk_columns+dream_lusk_columns+panas_columns)
 
 
+############# Generate sidecar based on existing columns
+
+## Start the sidecar with general info but extract the column info from file metadata.
+sidecar = {
+    "MeasurementToolMetadata": {
+        "Description": "Series of custom questionnaires"
+    }
+}
+
+for col in df:
+    column_info = {}
+    # Get probe string (if present).
+    if col in initial_meta.column_names_to_labels:
+        column_info["Probe"] = initial_meta.column_names_to_labels[col]
+    elif col in morning_meta.column_names_to_labels:
+        column_info["Probe"] = morning_meta.column_names_to_labels[col]
+    # Get response option strings (if present).
+    if col in initial_meta.variable_value_labels:
+        column_info["Levels"] = initial_meta.variable_value_labels[col]
+    elif col in morning_meta.variable_value_labels:
+        column_info["Levels"] = morning_meta.variable_value_labels[col]
+    
+    if column_info:
+        sidecar[col] = column_info
+
 # Export.
-df.to_csv(export_path, sep="\t",
+df.to_csv(export_path_data, sep="\t",
     index=True, na_rep="n/a", float_format="%.1f")
+with open(export_path_sidecar, "w", encoding="utf-8") as fp:
+    json.dump(sidecar, fp, indent=4, sort_keys=False, ensure_ascii=True)
