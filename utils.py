@@ -2,6 +2,7 @@
 
 import json
 from pathlib import Path
+import time
 
 import pyreadstat
 
@@ -22,8 +23,13 @@ def load_qualtrics_source(which):
     elif which == "morning":
         potential_paths = list(source_dir.glob("*Morning*report*form*.sav"))
     
-    assert len(potential_paths) == 1
-    filepath = potential_paths[0]
+    # Find most recent filename.
+    date_strings = [ x.stem.split("_", 1)[1] for x in potential_paths ]
+    date_times = [ time.strptime(x, "%B+%d,+%Y_%H.%M") for x in date_strings ]
+    recent_date = max(date_times)
+    recent_index = date_times.index(recent_date)
+    
+    filepath = potential_paths[recent_index]
 
     df, meta = pyreadstat.read_sav(filepath)
 

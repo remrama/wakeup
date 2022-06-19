@@ -49,4 +49,5 @@ df = df[df["Email"].str.contains("@")]
 
 # Export
 df = df[["Email", "ParticipantID", "TaskInstructions"]]
+df = df.sort_values("ParticipantID")
 df.to_csv(export_path, index=False)
