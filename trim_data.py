@@ -1,5 +1,6 @@
 ######### Make a condensed file with only those who completed 2nd part
 ######### and essentials variables.
+######### Some slight manipulation too (e.g., binarizing some responses).
 
 import json
 from pathlib import Path
@@ -21,16 +22,16 @@ export_path_sidecar = export_path_data.with_suffix(".json")
 # Load data.
 df = pd.read_csv(import_path_data, sep="\t")
 with open(import_path_sidecar, "r", encoding="utf-8") as fp:
-    sidecar = json.load(fp)
+    full_sidecar = json.load(fp)
 
 CONDENSE_KEEP_COLUMNS = [
     "ParticipantID",
     "Condition",
-    "Morning_recall",
-    "Task_completion",
     "Multiple_attempts",
     "Task_lucid",
     "Wakeup",
+    "Wakeup_immediately", # derived
+    "Wakeup_shortly", # derived
     "Wakeup_impact",
     "Lucidity",
     "Sleep_paralysis",
@@ -41,11 +42,42 @@ CONDENSE_KEEP_COLUMNS = [
 ]
 
 # Reduce to only those who completed the second part.
+# Reduce to only those who completed the task.
 df = df.query("Completed_part2.eq(True)")
+df = df.query("Task_completion.eq(3)")
+
+# Bin the wakeup column by two different cutoffs.
+df["Wakeup_immediately"] = df["Wakeup"].le(2).astype(int)
+df["Wakeup_shortly"] = df["Wakeup"].le(3).astype(int)
 
 # Reduce to desired columns.
 df = df[CONDENSE_KEEP_COLUMNS]
-sidecar = { k: v for k, v in sidecar.items() if k in CONDENSE_KEEP_COLUMNS }
+
+# Build sidecar.
+derived_info = {
+    "Wakeup_immediately": {
+        "Levels": {
+            "0": "Responded 2 or less to Wakeup probe.",
+            "1": "Responded 3 or more to Wakeup probe."
+        }
+    },
+    "Wakeup_shortly": {
+        "Levels": {
+            "0": "Responded 3 or less to Wakeup probe.",
+            "1": "Responded 4 or more to Wakeup probe."
+        }
+    }
+}
+sidecar = {
+    "MeasurementToolMetadata": {
+        "Description": "Series of custom questionnaires"
+    }
+}
+for c in CONDENSE_KEEP_COLUMNS:
+    if c in full_sidecar:
+        sidecar.update({c: full_sidecar[c]})
+    elif c in derived_info:
+        sidecar.update({c: derived_info[c]})
 
 # Export.
 df.to_csv(export_path_data, sep="\t", index=False, na_rep="n/a")

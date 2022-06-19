@@ -70,26 +70,6 @@ morning_df["ParticipantID"] = morning_df["ParticipantID"].astype(int)
 # #         df[column] = pd.Categorical(df[column], ordered=True)
 
 
-### Calculate aggregate survey scores
-
-# Regular LUSK from initial survey
-lusk_columns = [ c for c in initial_df if c.startswith("LUSK") ]
-initial_df["LUSK"] = initial_df[lusk_columns].sum(axis=1)
-
-# Dream-specific LUSK from morning report
-dream_lusk_columns = [ c for c in morning_df if c.startswith("Dream_LUSK") ]
-morning_df["Dream_LUSK"] = morning_df[dream_lusk_columns].sum(axis=1)
-
-# Dream-specific PANAS from morning report
-POS_PANAS = [1, 3, 5, 9, 10, 12, 14, 16, 17, 19]
-panas_columns = [ c for c in morning_df if c.startswith("PANAS") ]
-pos_panas_columns = [ c for c in panas_columns if int(c.split("_")[-1]) in POS_PANAS ]
-neg_panas_columns = [ c for c in panas_columns if c not in pos_panas_columns ]
-morning_df["PANAS_pos"] = morning_df[pos_panas_columns].sum(axis=1)
-morning_df["PANAS_neg"] = morning_df[neg_panas_columns].sum(axis=1)
-print("not accounting for NaNs in agg survey scores")
-
-
 
 ####### Merge the two on participant ID
 
@@ -136,14 +116,10 @@ df.index = df.index.map(lambda x: f"sub-{x}")
 #     ).str.join("")
 
 
-# No longer need Consent and Instructions columns.
-# Some columns are now worthless.
-DROP_COLUMNS = ["Email", "Consent", "Instructions"]
-df = df.drop(columns=DROP_COLUMNS)
-df = df.drop(columns=lusk_columns+dream_lusk_columns+panas_columns)
-
-
 ############# Generate sidecar based on existing columns
+############# and
+############# remap Likert ordering (if options were moved in creation they are in nonsensical order)
+########## !! Need to apply remappings before deriving aggregate scale scores.
 
 ## Start the sidecar with general info but extract the column info from file metadata.
 sidecar = {
@@ -152,23 +128,75 @@ sidecar = {
     }
 }
 
+likert_remappings = {}
+
 for col in df:
     column_info = {}
+    probe = None
+    levels = None
+
     # Get probe string (if present).
     if col in initial_meta.column_names_to_labels:
-        column_info["Probe"] = initial_meta.column_names_to_labels[col]
+        probe = initial_meta.column_names_to_labels[col]
     elif col in morning_meta.column_names_to_labels:
-        column_info["Probe"] = morning_meta.column_names_to_labels[col]
+        probe = morning_meta.column_names_to_labels[col]
     # Get response option strings (if present).
     if col in initial_meta.variable_value_labels:
         levels = initial_meta.variable_value_labels[col]
-        column_info["Levels"] = { int(k): v for k, v in levels.items() }
     elif col in morning_meta.variable_value_labels:
         levels = morning_meta.variable_value_labels[col]
-        column_info["Levels"] = { int(k): v for k, v in levels.items() }
     
+    if probe is not None:
+        column_info["Probe"] = probe
+    if levels is not None:
+        values = list(levels.keys())
+        if ((values[0] != 1)
+            or values != sorted(values)
+            or np.any(np.diff(values) != 1)):
+
+            new_values = range(1, len(values)+1)
+            levels = { k: v for k, v in zip(new_values, levels.values()) }
+            likert_remappings[col] = { x: y for x, y in zip(values, new_values) }
+        
+        levels = { int(k): v for k, v in levels.items() }
+        column_info["Levels"] = levels
+
     if column_info:
         sidecar[col] = column_info
+
+# Apply remappings.
+for col, remap in likert_remappings.items():
+    df[col] = df[col].replace(remap)
+
+
+### Calculate aggregate survey scores
+
+# Regular LUSK from initial survey
+lusk_columns = [ c for c in df if c.startswith("LUSK") ]
+df["LUSK"] = df[lusk_columns].sum(axis=1)
+
+# Dream-specific LUSK from morning report
+dream_lusk_columns = [ c for c in df if c.startswith("Dream_LUSK") ]
+df["Dream_LUSK"] = df[dream_lusk_columns].sum(axis=1)
+
+# Dream-specific PANAS from morning report
+POS_PANAS = [1, 3, 5, 9, 10, 12, 14, 16, 17, 19]
+panas_columns = [ c for c in df if c.startswith("PANAS") ]
+pos_panas_columns = [ c for c in panas_columns if int(c.split("_")[-1]) in POS_PANAS ]
+neg_panas_columns = [ c for c in panas_columns if c not in pos_panas_columns ]
+df["PANAS_pos"] = df[pos_panas_columns].sum(axis=1)
+df["PANAS_neg"] = df[neg_panas_columns].sum(axis=1)
+print("not accounting for NaNs in agg survey scores")
+
+
+
+# No longer need Consent and Instructions columns.
+# Some columns are now worthless.
+drop_columns = ["Email", "Consent", "Instructions"]
+drop_columns = drop_columns + lusk_columns + dream_lusk_columns + panas_columns
+df = df.drop(columns=drop_columns)
+sidecar = { k: v for k, v in sidecar.items() if k in df or k == "MeasurementToolMetadata" }
+
 
 # Export.
 df.to_csv(export_path_data, sep="\t",
