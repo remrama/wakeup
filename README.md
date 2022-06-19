@@ -12,8 +12,10 @@ Participants were asked to complete one of the following tasks while lucid:
 
 ```shell
 # Clean and aggregate raw Qualtrics output
-python source2raw.py                # ==> derivatives/data.py
+python source2raw.py                # ==> derivatives/data.tsv
+                                    # ==> derivatives/data.json
 
 # Export a trimmed datafile with the main data of interest.
-python trim_data.py                 # ==> derivatives/data_trimmed.py
+python trim_data.py                 # ==> derivatives/data_trimmed.tsv
+                                    # ==> derivatives/data_trimmed.json
 ```
