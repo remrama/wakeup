@@ -57,14 +57,14 @@ df = df[CONDENSE_KEEP_COLUMNS]
 derived_info = {
     "Wakeup_immediately": {
         "Levels": {
-            "0": "Responded 2 or less to Wakeup probe.",
-            "1": "Responded 3 or more to Wakeup probe."
+            "0": "Responded 3 or more to Wakeup probe.",
+            "1": "Responded 2 or less to Wakeup probe."
         }
     },
     "Wakeup_shortly": {
         "Levels": {
-            "0": "Responded 3 or less to Wakeup probe.",
-            "1": "Responded 4 or more to Wakeup probe."
+            "0": "Responded 4 or more to Wakeup probe.",
+            "1": "Responded 3 or less to Wakeup probe."
         }
     }
 }
