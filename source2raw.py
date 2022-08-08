@@ -171,22 +171,28 @@ for col, remap in likert_remappings.items():
 
 ### Calculate aggregate survey scores
 
+def imputed_sum(row):
+    if row.isna().mean() > .5:
+        # Return nan if more than half of responses are missing.
+        return np.nan
+    else:
+        return row.fillna(row.mean()).sum()
+
 # Regular LUSK from initial survey
 lusk_columns = [ c for c in df if c.startswith("LUSK") ]
-df["LUSK"] = df[lusk_columns].sum(axis=1)
+df["LUSK"] = df[lusk_columns].apply(imputed_sum, axis=1)
 
 # Dream-specific LUSK from morning report
 dream_lusk_columns = [ c for c in df if c.startswith("Dream_LUSK") ]
-df["Dream_LUSK"] = df[dream_lusk_columns].sum(axis=1)
+df["Dream_LUSK"] = df[dream_lusk_columns].apply(imputed_sum, axis=1)
 
 # Dream-specific PANAS from morning report
 POS_PANAS = [1, 3, 5, 9, 10, 12, 14, 16, 17, 19]
 panas_columns = [ c for c in df if c.startswith("PANAS") ]
 pos_panas_columns = [ c for c in panas_columns if int(c.split("_")[-1]) in POS_PANAS ]
 neg_panas_columns = [ c for c in panas_columns if c not in pos_panas_columns ]
-df["PANAS_pos"] = df[pos_panas_columns].sum(axis=1)
-df["PANAS_neg"] = df[neg_panas_columns].sum(axis=1)
-print("not accounting for NaNs in agg survey scores")
+df["PANAS_pos"] = df[pos_panas_columns].apply(imputed_sum, axis=1)
+df["PANAS_neg"] = df[neg_panas_columns].apply(imputed_sum, axis=1)
 
 
 
