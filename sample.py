@@ -27,8 +27,9 @@ export_path_plot = export_path_data.with_suffix(".png")
 # Load data.
 df, sidecar = utils.load_data_and_sidecar(import_path)
 
-# Drop to total sample.
-df = df.query("Completed_part2.eq(True)")
+# Drop to final sample.
+df = df.query("Completed_part2.eq(True)"
+    ).query("Task_completion.eq(3)")
 
 if feat == "recruitment":
     # recruitment_5_TEXT is for "Other" write-in

@@ -12,14 +12,22 @@ Participants were asked to complete one of the following tasks while lucid:
 
 ```shell
 # Clean and aggregate raw Qualtrics output.
-python source2raw.py                # ==> derivatives/data.tsv & .json
+python source2raw.py                # => derivatives/data.tsv & .json
 
 # Export a trimmed datafile with the main data of interest.
-python trim_data.py                 # ==> derivatives/data_trimmed.tsv & .json
+python trim_data.py                 # => derivatives/data_trimmed.tsv & .json
 
 # Describe the sample.
-python sample.py -f age             # ==> results/sample_age.tsv & .png
-python sample.py -f gender          # ==> results/sample_gender.tsv & .png
-python sample.py -f Condition       # ==> results/sample_condition.tsv & .png
-python sample.py -f recruitment     # ==> results/sample_recruitment.tsv & .png
+python sample.py -f age             # => results/sample_age.tsv & .png
+python sample.py -f gender          # => results/sample_gender.tsv & .png
+python sample.py -f Condition       # => results/sample_condition.tsv & .png
+python sample.py -f recruitment     # => results/sample_recruitment.tsv & .png
+
+# Inspect survey responses.
+python inspection.py -s initial     # => results/inspection_initial.png
+python inspection.py -s morning     # => results/inspection_morning.png
+
+# Run chi-squared analyses.
+python chisquared.py -t wakeup       # => results/chisquared_wakeup.tsv & .png
+python chisquared.py -t impact       # => results/chisquared_impact.tsv & .png
 ```
