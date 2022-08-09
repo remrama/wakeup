@@ -11,11 +11,15 @@ Participants were asked to complete one of the following tasks while lucid:
 ```
 
 ```shell
-# Clean and aggregate raw Qualtrics output
-python source2raw.py                # ==> derivatives/data.tsv
-                                    # ==> derivatives/data.json
+# Clean and aggregate raw Qualtrics output.
+python source2raw.py                # ==> derivatives/data.tsv & .json
 
 # Export a trimmed datafile with the main data of interest.
-python trim_data.py                 # ==> derivatives/data_trimmed.tsv
-                                    # ==> derivatives/data_trimmed.json
+python trim_data.py                 # ==> derivatives/data_trimmed.tsv & .json
+
+# Describe the sample.
+python sample.py -f age             # ==> results/sample_age.tsv & .png
+python sample.py -f gender          # ==> results/sample_gender.tsv & .png
+python sample.py -f Condition       # ==> results/sample_condition.tsv & .png
+python sample.py -f recruitment     # ==> results/sample_recruitment.tsv & .png
 ```
