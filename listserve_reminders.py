@@ -13,15 +13,15 @@ When sending the email, use a Qualtrics contact list.
 
 Grab freshest data and rerun right before sending.
 """
-
 from pathlib import Path
 
 import utils
 
+config = utils.load_config()
 
-root_dir = Path("../")
+root_dir = Path(config["root_directory"])
 
-export_path = root_dir / "derivatives" / "email_contacts_reminders.csv"
+export_path = root_dir / "email_lists" / "listserve_reminders.csv"
 
 
 # Get a list of those who submitted the final report.
