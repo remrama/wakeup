@@ -1,16 +1,23 @@
 """Helper functions."""
-
 import json
 from pathlib import Path
 import time
 
+import pandas as pd
 import pyreadstat
+
 
 def load_config():
     """Return the configuration file."""
     with open("./config.json", "r", encoding="utf-8") as jsonfile:
         return json.load(jsonfile)
 
+def load_data_and_sidecar(import_path_data):
+    import_path_sidecar = import_path_data.with_suffix(".json")
+    df = pd.read_csv(import_path_data, sep="\t")
+    with open(import_path_sidecar, "r", encoding="utf-8") as fp:
+        sidecar = json.load(fp)
+    return df, sidecar
 
 def load_qualtrics_source(which):
     """Return raw qualtrics SPSS data."""

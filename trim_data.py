@@ -1,11 +1,8 @@
 ######### Make a condensed file with only those who completed 2nd part
 ######### and essentials variables.
 ######### Some slight manipulation too (e.g., binarizing some responses).
-
 import json
 from pathlib import Path
-
-import pandas as pd
 
 import utils
 
@@ -15,14 +12,11 @@ config = utils.load_config()
 # Choose filepaths.
 root_dir = Path(config["root_directory"])
 import_path_data = root_dir / "derivatives" / "data.tsv"
-import_path_sidecar = import_path_data.with_suffix(".json")
 export_path_data = import_path_data.with_stem("data_trimmed")
 export_path_sidecar = export_path_data.with_suffix(".json")
 
 # Load data.
-df = pd.read_csv(import_path_data, sep="\t")
-with open(import_path_sidecar, "r", encoding="utf-8") as fp:
-    full_sidecar = json.load(fp)
+df, full_sidecar = utils.load_data_and_sidecar(import_path_data)
 
 CONDENSE_KEEP_COLUMNS = [
     "ParticipantID",
