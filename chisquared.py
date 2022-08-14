@@ -31,6 +31,13 @@ if test == "wakeup":
         "Wakeup": {0: "Long after", 1: "Shortly after"},
     }
     legend_title = "Woke up"
+elif test == "impact":
+    colA, colB = "Condition", "Wakeup_impact"
+    label_legend = {
+        "Condition": {0: "clench", 1: "visual"},
+        "Wakeup_impact": {0: "No", 1: "Yes"},
+    }
+    legend_title = "Task woke me up"
 
 # Choose filepaths.
 root_dir = Path(config["root_directory"])
@@ -44,12 +51,13 @@ df, sidecar = utils.load_data_and_sidecar(import_path)
 
 df = df.query("Condition.isin(['Clench', 'Visual'])")
 
-# Binarize wakeup success.
+# Binarize variables used.
 df["Wakeup"] = df["Wakeup"].le(2)
-# Booleanize the condition.
 df["Condition"] = df["Condition"].ne("Clench")
+df["Wakeup_impact"] = df["Wakeup_impact"].eq(2)
 
 observed, stats = pg.chi2_mcnemar(df, colA, colB)
+# expected, observed, stats = pg.chi2_independence(df, colA, colB)
 
 # Reformat contingency table for exporting.
 observed = observed.stack().rename("count")

@@ -1,6 +1,5 @@
-"""Inspect responses to either survey.
+"""Inspect responses to both surveys.
 """
-import argparse
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -10,7 +9,7 @@ import pingouin as pg
 import utils
 
 plt.rcParams["savefig.dpi"] = 600
-plt.rcParams["interactive"] = True
+# plt.rcParams["interactive"] = True
 plt.rcParams["figure.constrained_layout.use"] = True
 plt.rcParams["font.family"] = "Times New Roman"
 plt.rcParams["font.size"] = 8
@@ -23,32 +22,24 @@ plt.rcParams["axes.linewidth"] = 0.8 # edge line width
 
 config = utils.load_config()
 
-parser = argparse.ArgumentParser()
-parser.add_argument("-s", "--survey", type=str, required=True,
-    choices=["initial", "morning"])
-args = parser.parse_args()
-
-survey = args.survey
 
 
 # Pick columns to plot.
-if survey == "initial":
-    columns = [
-        "Dream_recall", "Nightmare_recall",
-        "Lucid_recall", "LUSK",
-    ]
-elif survey == "morning":
-    columns = [
-        "Multiple_attempts",
-        "Wakeup", "Wakeup_impact",
-        "Lucidity", "Nightmare", "Sleep_paralysis",
-        "Dream_LUSK", "PANAS_pos", "PANAS_neg",
-    ]
+columns = [
+    # from initial
+    "Dream_recall", "Nightmare_recall",
+    "Lucid_recall", "LUSK",
+    # from morning
+    "Multiple_attempts",
+    "Wakeup", "Wakeup_impact",
+    "Lucidity", "Nightmare", "Sleep_paralysis",
+    "Dream_LUSK", "PANAS_pos", "PANAS_neg",
+]
 
 # Choose filepaths.
 root_dir = Path(config["root_directory"])
 import_path = root_dir / "derivatives" / "data_trimmed.tsv"
-export_path_plot = root_dir / "results" / f"inspection_{survey}.png"
+export_path_plot = root_dir / "results" / "inspection.png"
 
 # Load data.
 df, sidecar = utils.load_data_and_sidecar(import_path)
@@ -59,7 +50,7 @@ df, sidecar = utils.load_data_and_sidecar(import_path)
 
 # Draw.
 n_vars = len(columns)
-figsize = (1*n_vars, 1*n_vars)
+figsize = (.9*n_vars, .9*n_vars)
 fig, axes = plt.subplots(nrows=n_vars, ncols=n_vars,
     figsize=figsize, sharex="col", sharey=False)
 
@@ -75,7 +66,7 @@ def get_bins(var):
     return np.linspace(low_lim, high_lim, len(levels)+1)
 
 hist1d_kwargs = dict(color="white", edgecolor="black", linewidth=1, clip_on=False)
-hist2d_kwargs = dict(cmap="binary", clip_on=False)
+hist2d_kwargs = dict(cmap="Blues", clip_on=False)
 
 for c in range(n_vars):
     xvar = columns[c]
@@ -118,9 +109,10 @@ for c in range(n_vars):
             ax.xaxis.set_major_locator(x_majorlocator)
 
         if r == c:
+            ax.spines[["left", "top", "right"]].set_visible(False)
+        if ax.get_subplotspec().is_first_row() or not ax.get_subplotspec().is_first_col():
             ax.yaxis.set_major_formatter(plt.matplotlib.ticker.NullFormatter())
             ax.tick_params(left=False)
-            ax.spines[["left", "top", "right"]].set_visible(False)
         else:
             y_minorlocator = plt.matplotlib.ticker.MultipleLocator(1)
             y_majorlocator = plt.matplotlib.ticker.FixedLocator(
@@ -129,7 +121,7 @@ for c in range(n_vars):
             ax.yaxis.set_major_locator(y_majorlocator)
 
         if r != c:
-            text = f"r = {r:.2f}\np = {p:.3f}"
+            text = f"r = {r:.2f}\np = {p:.3f}".replace("0.", ".")
             color = "black" if p < .1 else "gainsboro"
             ax.text(.95, .05, text, color=color,
                 va="bottom", ha="right", transform=ax.transAxes)
