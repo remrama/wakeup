@@ -149,15 +149,21 @@ for col in df:
     if probe is not None:
         column_info["Probe"] = probe
     if levels is not None:
-        values = list(levels.keys())
-        if ((values[0] != 1)
-            or values != sorted(values)
-            or np.any(np.diff(values) != 1)):
+        # values = list(levels.keys())
+        # if ((values[0] != 1)
+        #     or values != sorted(values)
+        #     or np.any(np.diff(values) != 1)):
 
-            new_values = range(1, len(values)+1)
-            levels = { k: v for k, v in zip(new_values, levels.values()) }
-            likert_remappings[col] = { x: y for x, y in zip(values, new_values) }
+        #     new_values = range(1, len(values)+1)
+        #     levels = { k: v for k, v in zip(new_values, levels.values()) }
+        #     likert_remappings[col] = { x: y for x, y in zip(values, new_values) }
         
+        # levels = { int(k): v for k, v in levels.items() }
+        if not col.startswith("Email"):
+            if col in initial_meta.column_names_to_labels:
+                utils.validate_likert_scales(initial_meta, col)
+            else:
+                utils.validate_likert_scales(morning_meta, col)
         levels = { int(k): v for k, v in levels.items() }
         column_info["Levels"] = levels
 

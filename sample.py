@@ -31,14 +31,6 @@ df, sidecar = utils.load_data_and_sidecar(import_path)
 # df = df.query("Completed_part2.eq(True)"
 #     ).query("Task_completion.eq(3)")
 
-# if feat == "recruitment":
-#     # recruitment_5_TEXT is for "Other" write-in
-#     # recruitment_7_TEXT is for "Online dream forum" write-in
-#     # recruitment_8_TEXT is for "Email list" write-in
-#     # (Don't line up with response options because of the reordering.)
-#     df["recruitment_TEXT"] = df["recruitment_5_TEXT"].fillna(df["recruitment_7_TEXT"]).fillna(df["recruitment_8_TEXT"])
-#     # These aren't really interesting so I'm ditching them.
-
 
 ser = df[feat].value_counts().rename("count").rename_axis(feat).sort_index()
 

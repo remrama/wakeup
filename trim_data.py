@@ -36,6 +36,7 @@ CONDENSE_KEEP_COLUMNS = [
     "Wakeup_shortly", # derived
     "Wakeup_impact",
     "Lucidity",
+    "Nightmare",
     "Sleep_paralysis",
     "PANAS_pos", # derived
     "PANAS_neg", # derived

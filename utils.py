@@ -3,6 +3,8 @@ import json
 from pathlib import Path
 import time
 
+import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import pyreadstat
 
@@ -115,9 +117,26 @@ def standard_qualtrics_clean(df, keep_columns=[]):
     df = df.drop(columns=drop_columns)
     return df
 
+def validate_likert_scales(meta, vars_to_validate):
+    """Sometimes when the Qualtrics question is edited
+    the scale gets changed "unknowingly". Here, check
+    to make sure everything starts at 1 and increases by 1.
+    Could be remapped but it's easier and safer to fix
+    the source of the problem in Qualtrics.
+    """
+    if isinstance(vars_to_validate, str):
+        vars_to_validate = [vars_to_validate]
+    assert isinstance(vars_to_validate, list)
+    for var in vars_to_validate:
+        if var in meta.variable_value_labels:
+            levels = meta.variable_value_labels[var]
+            values = list(levels.keys())
+            assert values[0] == 1, f"{var} scale doesn't start at 1. Recode values in Qualtrics and re-export."
+            assert values == sorted(values), f"{var} scale is not in increasing order. Recode values in Qualtrics and re-export."
+            assert not np.any(np.diff(values) != 1), f"{var} scale is not linear. Recode values in Qualtrics and re-export."
+
 
 def load_matplotlib_settings():
-    import matplotlib.pyplot as plt
     # plt.rcParams["figure.dpi"] = 600
     plt.rcParams["savefig.dpi"] = 600
     plt.rcParams["interactive"] = True
