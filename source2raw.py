@@ -215,6 +215,6 @@ sidecar = { k: v for k, v in sidecar.items() if k in df or k == "MeasurementTool
 
 # Export.
 df.to_csv(export_path_data, sep="\t",
-    index=True, na_rep="n/a", float_format="%.0f")
+    index=True, na_rep="n/a", float_format="%.3f")
 with open(export_path_sidecar, "w", encoding="utf-8") as fp:
     json.dump(sidecar, fp, indent=4, sort_keys=False, ensure_ascii=True)

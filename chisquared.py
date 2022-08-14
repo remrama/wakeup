@@ -5,7 +5,6 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import pingouin as pg
-import seaborn as sns
 from statsmodels.graphics.mosaicplot import mosaic
 
 import utils
