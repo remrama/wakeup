@@ -32,5 +32,4 @@ python chisquared.py -t impact      # => results/chisquared_impact.tsv & .png
 
 # Visualize baseline LD frequency and wakeup success.
 python plot-baselineXwakeup.py      # => results/baselineXwakeup.png
-
 ```
