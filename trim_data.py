@@ -21,16 +21,24 @@ df, full_sidecar = utils.load_data_and_sidecar(import_path_data)
 CONDENSE_KEEP_COLUMNS = [
     "ParticipantID",
     "Condition",
+    "age",
+    "gender",
+    "recruitment",
+    "Dream_recall",
+    "Nightmare_recall",
+    "Lucid_recall",
+    "LUSK", # derived
     "Multiple_attempts",
     "Task_lucid",
+    "Dream_LUSK", # derived
     "Wakeup",
     "Wakeup_immediately", # derived
     "Wakeup_shortly", # derived
     "Wakeup_impact",
     "Lucidity",
     "Sleep_paralysis",
-    "PANAS_pos",
-    "PANAS_neg",
+    "PANAS_pos", # derived
+    "PANAS_neg", # derived
     "Dream_report",
     "Free_response",
 ]

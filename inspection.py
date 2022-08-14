@@ -34,15 +34,15 @@ elif survey == "morning":
 
 # Choose filepaths.
 root_dir = Path(config["root_directory"])
-import_path = root_dir / "derivatives" / "data.tsv"
+import_path = root_dir / "derivatives" / "data_trimmed.tsv"
 export_path_plot = root_dir / "results" / f"inspection_{survey}.png"
 
 # Load data.
 df, sidecar = utils.load_data_and_sidecar(import_path)
 
-# Drop to final sample.
-df = df.query("Completed_part2.eq(True)"
-    ).query("Task_completion.eq(3)")
+# # Drop to final sample.
+# df = df.query("Completed_part2.eq(True)"
+#     ).query("Task_completion.eq(3)")
 
 # Draw.
 g = sns.pairplot(df,

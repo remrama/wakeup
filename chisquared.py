@@ -10,6 +10,9 @@ from statsmodels.graphics.mosaicplot import mosaic
 
 import utils
 
+utils.load_matplotlib_settings()
+
+
 config = utils.load_config()
 
 parser = argparse.ArgumentParser()
@@ -25,11 +28,13 @@ if test == "wakeup":
     colA, colB = "Condition", "Wakeup"
     label_legend = {
         "Condition": {0: "clench", 1: "visual"},
-        "Wakeup": {0: "Kept dreaming", 1: "Wokeup"},
+        "Wakeup": {0: "Long after", 1: "Shortly after"},
     }
+    legend_title = "Woke up"
+
 # Choose filepaths.
 root_dir = Path(config["root_directory"])
-import_path = root_dir / "derivatives" / "data.tsv"
+import_path = root_dir / "derivatives" / "data_trimmed.tsv"
 export_path_plot = root_dir / "results" / f"chisquared_{test}.png"
 export_path_ctab = export_path_plot.with_suffix(".tsv")
 export_path_stats = export_path_plot.with_suffix(".json")
@@ -37,10 +42,7 @@ export_path_stats = export_path_plot.with_suffix(".json")
 # Load data.
 df, sidecar = utils.load_data_and_sidecar(import_path)
 
-# Drop to final sample.
-df = df.query("Completed_part2.eq(True)"
-    ).query("Task_completion.eq(3)"
-    ).query("Condition.isin(['Clench', 'Visual'])")
+df = df.query("Condition.isin(['Clench', 'Visual'])")
 
 # Binarize wakeup success.
 df["Wakeup"] = df["Wakeup"].le(2)
@@ -65,7 +67,7 @@ observed = observed.reset_index().replace(label_legend
 chi2val, pval = stats.loc["mcnemar", ["chi2", "p-exact"]]
 
 # Plotting variables.
-FIGSIZE = (2.2, 1.8)
+FIGSIZE = (2.4, 1.8)
 w2h_ratio = FIGSIZE[0] / FIGSIZE[1]
 AX_LEFT = .26
 AX_WIDTH = .42
@@ -96,7 +98,7 @@ fig, ax = plt.subplots(figsize=FIGSIZE, gridspec_kw=GRIDSPEC_KW)
 _, rects = mosaic(
     data=observed,
     properties=PROPS,
-    # labelizer=lambda x: None,
+    labelizer=lambda x: None,
     # horizontal=True,
     # axes_label=True,
     gap=.05,
@@ -129,8 +131,8 @@ ax2.xaxis.set(major_locator=plt.MultipleLocator(.5),
 handles = [ plt.matplotlib.patches.Patch(
         edgecolor="none", facecolor=c, label=l)
     for l, c in palette.items() ]
-legend = ax.legend(handles=handles,
-    title=colB,
+legend = ax.legend(handles=handles[::-1],
+    title=legend_title,
     loc="upper left", bbox_to_anchor=(1, 1), borderaxespad=0,
     frameon=False, labelspacing=.1, handletextpad=.2)
 # legend._legend_box.sep = 2 # brings title up farther on top of handles/labels
