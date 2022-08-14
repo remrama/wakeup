@@ -178,13 +178,16 @@ def imputed_sum(row):
     else:
         return row.fillna(row.mean()).sum()
 
+def imputed_mean(row):
+    return np.nan if row.isna().mean() > .5 else row.fillna(row.mean()).mean()
+
 # Regular LUSK from initial survey
 lusk_columns = [ c for c in df if c.startswith("LUSK") ]
-df["LUSK"] = df[lusk_columns].apply(imputed_sum, axis=1)
+df["LUSK"] = df[lusk_columns].apply(imputed_mean, axis=1)
 
 # Dream-specific LUSK from morning report
 dream_lusk_columns = [ c for c in df if c.startswith("Dream_LUSK") ]
-df["Dream_LUSK"] = df[dream_lusk_columns].apply(imputed_sum, axis=1)
+df["Dream_LUSK"] = df[dream_lusk_columns].apply(imputed_mean, axis=1)
 
 # Dream-specific PANAS from morning report
 POS_PANAS = [1, 3, 5, 9, 10, 12, 14, 16, 17, 19]
