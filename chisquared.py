@@ -1,47 +1,31 @@
-"""Run chi2 analysis, export table and plot.
+"""Run chi2 analysis on subjective reporting of task causing awakening, export table and plot.
+
+- impact analysis is chi2 (not fisher), use power_divergence maybe for simplicity
+- wakeup analysis is linear regression now
+- wakeup analysis gets likert plot now
+- separate script for correlations:
+    - PANAS_neg/Dream_LUSK correlation
+    - Task_lucidity/Wakeup correlation
+- probably remove plot-baselineXwakeup
 """
-import argparse
 from pathlib import Path
 
+import colorcet as cc
 import matplotlib.pyplot as plt
 import pingouin as pg
 from statsmodels.graphics.mosaicplot import mosaic
 
 import utils
 
+
+# Load custom plotting settings.
 utils.load_matplotlib_settings()
 
-
-config = utils.load_config()
-
-parser = argparse.ArgumentParser()
-parser.add_argument("-t", "--test", type=str, required=True,
-    choices=["wakeup", "impact"])
-args = parser.parse_args()
-
-test = args.test
-
-
-# Pick columns/variables for analysis.
-if test == "wakeup":
-    colA, colB = "Condition", "Wakeup"
-    label_legend = {
-        "Condition": {0: "clench", 1: "visual"},
-        "Wakeup": {0: "Long after", 1: "Shortly after"},
-    }
-    legend_title = "Woke up"
-elif test == "impact":
-    colA, colB = "Condition", "Wakeup_impact"
-    label_legend = {
-        "Condition": {0: "clench", 1: "visual"},
-        "Wakeup_impact": {0: "No", 1: "Yes"},
-    }
-    legend_title = "Task woke me up"
-
 # Choose filepaths.
+config = utils.load_config()
 root_dir = Path(config["root_directory"])
 import_path = root_dir / "derivatives" / "data_trimmed.tsv"
-export_path_plot = root_dir / "results" / f"chisquared_{test}.png"
+export_path_plot = root_dir / "results" / f"chisquared.png"
 export_path_ctab = export_path_plot.with_suffix(".tsv")
 export_path_stats = export_path_plot.with_suffix(".json")
 
@@ -50,53 +34,65 @@ df, sidecar = utils.load_data_and_sidecar(import_path)
 
 df = df.query("Condition.isin(['Clench', 'Visual'])")
 
+# ctab = df[[colA, colB]].groupby([colA, colB]).size().unstack().fillna(0)
+
 # Binarize variables used.
-df["Wakeup"] = df["Wakeup"].le(2)
+# df["Wakeup"] = df["Wakeup"].le(2)
 df["Condition"] = df["Condition"].ne("Clench")
 df["Wakeup_impact"] = df["Wakeup_impact"].eq(2)
 
-observed, stats = pg.chi2_mcnemar(df, colA, colB)
-# expected, observed, stats = pg.chi2_independence(df, colA, colB)
+COLUMN_A = "Condition"
+COLUMN_B = "Wakeup_impact"
 
+# Remove correction to get integers/counts in `observed` contingency table output.
+expected, observed, stats = pg.chi2_independence(df, COLUMN_A, COLUMN_B, correction=False)
 # Reformat contingency table for exporting.
 observed = observed.stack().rename("count")
 
 
-#####################################################
-# Visualization
-#####################################################
+################################################################################
+# VISUALIZATION SETUP
+################################################################################
+
+LABELS = {
+    COLUMN_A: {False: "Clench", True: "Visual"},
+    COLUMN_B: {False: "No", True: "Yes"},
+}
+LEGEND_TITLE = "Task woke me up"
 
 # Reformat contingency data for plotting with mosaic.
-observed = observed.reset_index().replace(label_legend
-    ).set_index([colA, colB]).squeeze("columns")
+observed = observed.reset_index().replace(LABELS).set_index([COLUMN_A, COLUMN_B]).squeeze("columns")
 
 # Get stats values.
-chi2val, pval = stats.loc["mcnemar", ["chi2", "p-exact"]]
+chi2val, pval = stats.set_index("test").loc["pearson", ["chi2", "pval"]]
 
 # Plotting variables.
 FIGSIZE = (2.4, 1.8)
 w2h_ratio = FIGSIZE[0] / FIGSIZE[1]
-AX_LEFT = .26
-AX_WIDTH = .42
-AX_TOP = .75
-ax_height = AX_WIDTH*w2h_ratio
-GRIDSPEC_KW = dict(left=AX_LEFT, right=AX_LEFT+AX_WIDTH,
-    top=AX_TOP, bottom=AX_TOP-ax_height)
-
+AX_LEFT = 0.26
+AX_WIDTH = 0.42
+AX_TOP = 0.75
+ax_height = AX_WIDTH * w2h_ratio
+GRIDSPEC_KW = dict(left=AX_LEFT, right=AX_LEFT + AX_WIDTH, top=AX_TOP, bottom=AX_TOP - ax_height)
 SIG_XLOC = 1.05
-SIG_YLOC = .5
+SIG_YLOC = 0.5
 
-# palette = utils.load_config(as_object=False)["colors"]
+cmap = cc.cm.cwr
 palette = {
-    label_legend[colB][0]: "red",
-    label_legend[colB][1]: "green",
+    LABELS[COLUMN_B][0]: cmap(1.),
+    LABELS[COLUMN_B][1]: cmap(0.),
 }
 
-PROPS = lambda key: { # ("True", "True") strings(?) tuple in key_order
-    "color": palette[key[1]], "alpha": 1,
+props = lambda key: { # ("True", "True") strings(?) tuple in key_order
+    "color": palette[str(key[1])],  # 1 for coloring by column B, 0 for A
+    "alpha": 1,
 }
 
-############### Draw.
+
+################################################################################
+# DRAW
+################################################################################
+
 
 # Open figure.
 fig, ax = plt.subplots(figsize=FIGSIZE, gridspec_kw=GRIDSPEC_KW)
@@ -104,20 +100,22 @@ fig, ax = plt.subplots(figsize=FIGSIZE, gridspec_kw=GRIDSPEC_KW)
 # Draw boxes.
 _, rects = mosaic(
     data=observed,
-    properties=PROPS,
+    properties=props,
     labelizer=lambda x: None,
     # horizontal=True,
     # axes_label=True,
-    gap=.05,
+    gap=0.05,
     ax=ax,
 )
 
 # Aesthetics.
-ax.set_xlabel(colA)
+ax.set_xlabel("Dream task")
 ax.set_ylabel("Relative frequency")
-ax.yaxis.set(major_locator=plt.MultipleLocator(.5),
-    minor_locator=plt.MultipleLocator(.1),
-    major_formatter=plt.matplotlib.ticker.PercentFormatter(xmax=1))
+ax.yaxis.set(
+    major_locator=plt.MultipleLocator(0.5),
+    minor_locator=plt.MultipleLocator(0.1),
+    major_formatter=plt.matplotlib.ticker.PercentFormatter(xmax=1),
+)
 ax.spines["top"].set_visible(False)
 ax.spines["right"].set_visible(False)
 ax.spines["left"].set_position(("outward", 5))
@@ -126,36 +124,42 @@ ax.spines["bottom"].set_position(("outward", 5))
 ax2 = ax.twiny()
 ax2.spines["top"].set_position(("outward", 5))
 ax2.set_xlabel("Relative frequency", labelpad=6)
-ax2.xaxis.set(major_locator=plt.MultipleLocator(.5),
-    minor_locator=plt.MultipleLocator(.1),
+ax2.xaxis.set(major_locator=plt.MultipleLocator(0.5),
+    minor_locator=plt.MultipleLocator(0.1),
     major_formatter=plt.matplotlib.ticker.PercentFormatter(xmax=1))
 
-# # ax.tick_params(left=False, bottom=False)
-# # for ch in ax.get_children():
-# #     if isinstance(ch, plt.Text):
-# #         ch.set_horizontalalignment("left")
+ax.tick_params(which="both", direction="out")
+ax2.tick_params(which="both", direction="out")
 
-handles = [ plt.matplotlib.patches.Patch(
-        edgecolor="none", facecolor=c, label=l)
-    for l, c in palette.items() ]
-legend = ax.legend(handles=handles[::-1],
-    title=legend_title,
-    loc="upper left", bbox_to_anchor=(1, 1), borderaxespad=0,
-    frameon=False, labelspacing=.1, handletextpad=.2)
+# Legend.
+handles = [
+    plt.matplotlib.patches.Patch(edgecolor="none", label=l, facecolor=c) for l, c in palette.items()
+]
+legend = ax.legend(
+    handles=handles[::-1],
+    title=LEGEND_TITLE,
+    loc="upper left",
+    bbox_to_anchor=(1, 1),
+    borderaxespad=0,
+    frameon=False,
+    labelspacing=0.1,
+    handletextpad=0.2,
+)
 # legend._legend_box.sep = 2 # brings title up farther on top of handles/labels
 legend._legend_box.align = "left"
 
-
 # Add significance text.
-sigchars = "*" * sum([ pval<cutoff for cutoff in (.05, .01, .001) ])
-ptxt = r"p<0.001" if pval < .001 else fr"$p={pval:.2f}$"
-ptxt = ptxt.replace("0", "", 1)
-chi2txt = fr"$\chi^2={chi2val:.0f}$"
+sigchars = "*" * sum([ pval < cutoff for cutoff in (0.05, 0.01, 0.001) ])
+ptxt = r"p<0.001" if pval < .001 else fr"$p={pval:.3f}$"
+ptxt = ptxt.replace("0.", ".", 1)
+chi2txt = fr"$\chi^2={chi2val:.1f}$"
 stats_txt = chi2txt + "\n" + ptxt + sigchars
-ax.text(SIG_XLOC, SIG_YLOC, stats_txt, transform=ax.transAxes,
-    ha="left", va="top", linespacing=1)
+ax.text(
+    SIG_XLOC, SIG_YLOC, stats_txt, transform=ax.transAxes, ha="left", va="top", linespacing=1
+)
 
-# Export!
-observed.to_csv(export_path_ctab, sep="\t", index=True)
-stats.to_json(export_path_stats, orient="index", indent=4)
-plt.savefig(export_path_plot, dpi=300)
+# Export.
+observed.to_csv(export_path_ctab, index=True, na_rep="n/a", sep="\t")
+stats.to_csv(export_path_stats, index=False, na_rep="n/a", sep="\t")
+plt.savefig(export_path_plot)
+plt.savefig(export_path_plot.with_suffix(".pdf"))

@@ -1,0 +1,11 @@
+name: wakeup
+dependencies:
+  - ipython                   # development
+  - numpy                     # data analysis
+  - pandas                    # data analysis
+  - conda-forge::pyreadstat   # data analysis - load Qualtrics output
+  - conda-forge::pingouin     # data analysis - statistics
+  - statsmodels               # data analysis - statistics; data visualization
+  - matplotlib                # data visualization
+  - seaborn                   # data visualization
+  - conda-forge::colorcet     # data visualization - colormaps
