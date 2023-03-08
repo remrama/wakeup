@@ -38,11 +38,10 @@ columns = [
 
 # Choose filepaths.
 root_dir = Path(config["root_directory"])
-import_path = root_dir / "derivatives" / "data_trimmed.tsv"
 export_path_plot = root_dir / "results" / "inspection.png"
 
 # Load data.
-df, sidecar = utils.load_data_and_sidecar(import_path)
+df, sidecar = utils.load_data_and_sidecar(trim=True)
 
 # # Drop to final sample.
 # df = df.query("Completed_part2.eq(True)"

@@ -14,11 +14,49 @@ def load_config():
     with open("./config.json", "r", encoding="utf-8") as jsonfile:
         return json.load(jsonfile)
 
-def load_data_and_sidecar(import_path_data):
+def load_raw(import_path_data, trim=False):
+    """Load raw data tsv and sidecar json files.
+
+    If `trim` is True, reduce to only participants who completed part 2 and remove excess columns.
+    """
+    config = load_config()
+    root_dir = Path(config["root_directory"])
+    import_path_data = root_dir / "derivatives" / "data.tsv"
     import_path_sidecar = import_path_data.with_suffix(".json")
+
     df = pd.read_csv(import_path_data, sep="\t")
     with open(import_path_sidecar, "r", encoding="utf-8") as fp:
         sidecar = json.load(fp)
+
+    if trim:
+        # Reduce to only those who participated in the second part and completed the second part task.
+        df = df.query("Completed_part2.eq(True)").query("Task_completion.eq(3)")
+        # Reduce to desired columns.
+        KEEP_COLUMNS = [
+            "ParticipantID",
+            "Condition",
+            "age",
+            "gender",
+            "recruitment",
+            "Dream_recall",
+            "Nightmare_recall",
+            "Lucid_recall",
+            "LUSK",  # derived
+            "Multiple_attempts",
+            "Task_lucid",
+            "Dream_LUSK",  # derived
+            "Wakeup",
+            "Wakeup_impact",
+            "Lucidity",
+            "Nightmare",
+            "Sleep_paralysis",
+            "PANAS_pos",  # derived
+            "PANAS_neg",  # derived
+            "Dream_report",
+            "Free_response",
+        ]
+        df = df[KEEP_COLUMNS]
+        sidecar = {k: v for k, v in sidecar.items() if k in df or k == "MeasurementToolMetadata"}
     return df, sidecar
 
 def load_qualtrics_source(which):
@@ -117,6 +155,7 @@ def standard_qualtrics_clean(df, keep_columns=[]):
     df = df.drop(columns=drop_columns)
     return df
 
+
 def validate_likert_scales(meta, vars_to_validate):
     """Sometimes when the Qualtrics question is edited
     the scale gets changed "unknowingly". Here, check
@@ -134,6 +173,7 @@ def validate_likert_scales(meta, vars_to_validate):
             assert values[0] == 1, f"{var} scale doesn't start at 1. Recode values in Qualtrics and re-export."
             assert values == sorted(values), f"{var} scale is not in increasing order. Recode values in Qualtrics and re-export."
             assert not np.any(np.diff(values) != 1), f"{var} scale is not linear. Recode values in Qualtrics and re-export."
+
 
 
 def load_matplotlib_settings():

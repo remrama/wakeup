@@ -13,13 +13,12 @@ import utils
 # Choose filepaths.
 config = utils.load_config()
 root_dir = Path(config["root_directory"])
-import_path = root_dir / "derivatives" / "data_trimmed.tsv"
 export_path_plot = root_dir / "results" / f"chisquared.png"
 export_path_ctab = export_path_plot.with_suffix(".tsv")
 export_path_stats = export_path_plot.with_suffix(".json")
 
 # Load data.
-df, meta = utils.load_data_and_sidecar(import_path)
+df, meta = utils.load_data_and_sidecar(trim=True)
 
 df = df.query("Condition.isin(['Clench', 'Visual'])")
 

@@ -15,7 +15,6 @@ import utils
 # SETUP
 ################################################################################
 
-
 # Load variables from configuration file.
 config = utils.load_config()
 round1_start = config["round1_start_timestamp"]
@@ -36,7 +35,6 @@ morning_df, morning_meta = utils.load_qualtrics_source("morning")
 ################################################################################
 # PARTICIPANT REMOVAL
 ################################################################################
-
 
 # Remove pilot participants and incomplete surveys.
 initial_df = utils.standard_qualtrics_clean(initial_df, keep_columns=["StartDate"])
@@ -65,7 +63,6 @@ initial_df = (
 ################################################################################
 # MERGE FILES
 ################################################################################
-
 
 # Convert participant IDs to integers (to make sure same format).
 initial_df["ParticipantID"] = initial_df["ParticipantID"].astype(int)
@@ -171,7 +168,6 @@ for col, remap in likert_remappings.items():
 ################################################################################
 # CALCULATE AGGREGATED SURVEY SCORES
 ################################################################################
-
 
 def imputed_sum(row, cutoff=0.5):
     """Return imputed sum if proportion of values that are missing are greater than `cutoff`."""
