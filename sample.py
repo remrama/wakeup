@@ -27,7 +27,7 @@ config = utils.load_config()
 # Choose filepaths.
 root_dir = Path(config["root_directory"])
 import_path = root_dir / "derivatives" / "data_trimmed.tsv"
-export_path_data = root_dir / "results" / f"sample_{feature}.tsv".lower()
+export_path_data = root_dir / "derivatives" / f"sample_{feature}.tsv".lower()
 export_path_plot = export_path_data.with_suffix(".png")
 
 # Load data.

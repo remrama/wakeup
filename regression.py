@@ -13,7 +13,7 @@ import utils
 # Choose filepaths.
 config = utils.load_config()
 root_dir = Path(config["root_directory"])
-export_path_plot = root_dir / "results" / f"chisquared.png"
+export_path_plot = root_dir / "derivatives" / "chisquared.png"
 export_path_ctab = export_path_plot.with_suffix(".tsv")
 export_path_stats = export_path_plot.with_suffix(".json")
 
