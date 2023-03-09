@@ -24,7 +24,6 @@ python wakeup_timing.py
 
 # Did lucidity levels during wakeup tasks predict success?
 python wakeup_lucidity.py
-- Task_lucidity/Wakeup correlation
 
 # Did dream control (more generally) predict a change in dream emotion?
-     - PANAS_neg/Dream_LUSK correlation
+python control_emotion.py
