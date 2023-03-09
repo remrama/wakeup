@@ -22,5 +22,9 @@ python wakeup_impact.py
 # Did participants wake up sooner after the wakeup tasks?
 python wakeup_timing.py
 
-# Visualize baseline LD frequency and wakeup success.
-python plot-baselineXwakeup.py      #=> results/baselineXwakeup.png
+# Did lucidity levels during wakeup tasks predict success?
+python wakeup_lucidity.py
+- Task_lucidity/Wakeup correlation
+
+# Did dream control (more generally) predict a change in dream emotion?
+     - PANAS_neg/Dream_LUSK correlation

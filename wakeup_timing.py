@@ -79,8 +79,6 @@ cmap = cc.cm.linear_protanopic_deuteranopic_kbw_5_95_c34_r
 # Make sure wakeup responses are categorical.
 cats, cat_labels = zip(*meta[wakeup_col]["Levels"].items())
 cats = list(map(int, cats))
-# # FLIP order of values, so HIGHER is EARLIER awakening.
-# df[wakeup_col] = df[wakeup_col].rsub(max(cats))
 df[wakeup_col] = pd.Categorical(df[wakeup_col], cats, ordered=True)
 
 n_categories = len(cats)
@@ -168,7 +166,11 @@ ax.legend(handles=handles,
     ncol=n_categories,
 )
 
-# Export.
+
+################################################################################
+# EXPORT
+################################################################################
+
 freq.to_csv(export_path_freq, index=False, na_rep="n/a", sep="\t")
 stat.to_csv(export_path_stat, index=False, na_rep="n/a", sep="\t")
 plt.savefig(export_path_plot)
