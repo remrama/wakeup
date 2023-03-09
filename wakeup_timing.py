@@ -84,7 +84,6 @@ df[wakeup_col] = pd.Categorical(df[wakeup_col], cats, ordered=True)
 n_categories = len(cats)
 midpoint = ceil((cats[0] + cats[-1]) / 2)
 
-
 # Get relative percents.
 pcts = (df
     .groupby(task_col)[wakeup_col]

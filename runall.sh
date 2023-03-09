@@ -5,7 +5,7 @@
 set -e
 
 # Clean and aggregate raw Qualtrics output.
-python source2raw.py                #=> data.tsv
+python source2raw.py
 
 # Describe the sample.
 python sample.py -f age             #=> sample_age.tsv
@@ -14,7 +14,7 @@ python sample.py -f Condition       #=> sample_condition.tsv
 python sample.py -f recruitment     #=> sample_recruitment.tsv
 
 # Inspect survey responses.
-python inspection.py                #=> results/inspection.png
+python inspection.py
 
 # Did participants think the wakeup tasks impacted their awakening?
 python wakeup_impact.py
