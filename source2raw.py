@@ -194,7 +194,7 @@ df["PANAS_neg"] = df[neg_panas_columns].apply(imputed_sum, axis=1)
 
 # Drop unneccessary columns.
 drop_columns = ["Email", "Consent", "Instructions"]
-drop_columns = drop_columns + lusk_columns + dream_lusk_columns + panas_columns
+# drop_columns = drop_columns + lusk_columns + dream_lusk_columns + panas_columns
 df = df.drop(columns=drop_columns)
 sidecar = {k: v for k, v in sidecar.items() if k in df or k == "MeasurementToolMetadata"}
 

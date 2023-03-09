@@ -1,5 +1,5 @@
 """
-Run correlation analysis asking if lucidity during the dream task influenced reported wakeup time.
+Run correlation analysis asking if dream control influenced emotion.
 """
 from pathlib import Path
 
@@ -14,8 +14,15 @@ import utils
 # SETUP
 ################################################################################
 
-wakeup_col = "Wakeup"
-lucidity_col = "Task_lucid"
+control_col = "Dream_LUSK"
+emotion_col = "PANAS_neg"
+
+control_limits = [1, 5]  # LUSK total min, max values
+emotion_limits = [10, 50]  # PANAS total min and max values
+control_limits[0] -= 0.5
+control_limits[1] += 0.5
+emotion_limits[0] -= 5
+emotion_limits[1] += 5
 
 # Load custom plotting settings.
 utils.load_matplotlib_settings()
@@ -23,9 +30,9 @@ utils.load_matplotlib_settings()
 # Choose filepaths.
 config = utils.load_config()
 root_dir = Path(config["root_directory"])
-export_path_plot = root_dir / "derivatives" / "wakeup_lucidity-plot.png"
-export_path_desc = root_dir / "derivatives" / "wakeup_lucidity-desc.tsv"
-export_path_stat = root_dir / "derivatives" / "wakeup_lucidity-stat.tsv"
+export_path_plot = root_dir / "derivatives" / "control_emotion-plot.png"
+export_path_desc = root_dir / "derivatives" / "control_emotion-desc.tsv"
+export_path_stat = root_dir / "derivatives" / "control_emotion-stat.tsv"
 
 # Load data.
 df, meta = utils.load_raw(trim=True)
@@ -33,8 +40,8 @@ df, meta = utils.load_raw(trim=True)
 # Reduce to only wakeup task conditions.
 df = df.query("Condition != 'Clench'")
 # Ensure values are floats.
-df[wakeup_col] = df[wakeup_col].astype(float)
-df[lucidity_col] = df[lucidity_col].astype(float)
+df[control_col] = df[control_col].astype(float)
+df[emotion_col] = df[emotion_col].astype(float)
 
 
 ################################################################################
@@ -42,11 +49,11 @@ df[lucidity_col] = df[lucidity_col].astype(float)
 ################################################################################
 
 # Get descriptives.
-desc = df[[wakeup_col, lucidity_col]].describe().T.rename_axis("variable")
+desc = df[[control_col, emotion_col]].describe().T.rename_axis("variable")
 
 # Run correlation.
-x = df[lucidity_col].to_numpy()
-y = df[wakeup_col].to_numpy()
+x = df[control_col].to_numpy()
+y = df[emotion_col].to_numpy()
 stat = pg.corr(x, y, method="kendall")
 
 
@@ -58,12 +65,6 @@ stat = pg.corr(x, y, method="kendall")
 coef = np.polyfit(x, y, 1)
 poly1d_func = np.poly1d(coef) 
 
-# Grab ticks and labels from the sidecar file.
-xticks, xticklabels = zip(*meta[wakeup_col]["Levels"].items())
-xticks = list(map(int, xticks))
-yticks, yticklabels = zip(*meta[lucidity_col]["Levels"].items())
-yticks = list(map(int, yticks))
-
 # Open figure.
 fig, ax = plt.subplots(figsize=(2, 2))
 
@@ -72,13 +73,14 @@ ax.plot(x, y, "ko", ms=5, alpha=0.2)
 ax.plot(x, poly1d_func(x), "-k")
 
 # Aesthetics.
-ax.set_xticks(xticks)
-ax.set_yticks(yticks)
-ax.set_xlabel(lucidity_col)
-ax.set_ylabel(wakeup_col)
+ax.set_xlabel(control_col)
+ax.set_ylabel(emotion_col)
+ax.set_xlim(*control_limits)
+ax.set_ylim(*emotion_limits)
+ax.xaxis.set_major_locator(plt.MultipleLocator(1))
+ax.yaxis.set_major_locator(plt.MultipleLocator(10))
 ax.grid(True, axis="both")
-ax.set_aspect("equal")
-ax.margins(0.1)
+# ax.margins(0.1)
 
 
 ################################################################################
