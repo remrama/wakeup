@@ -7,5 +7,4 @@ dependencies:
   - conda-forge::pingouin     # data analysis - statistics
   - statsmodels               # data analysis - statistics; data visualization
   - matplotlib                # data visualization
-  - seaborn                   # data visualization
   - conda-forge::colorcet     # data visualization - colormaps
