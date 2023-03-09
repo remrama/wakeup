@@ -52,10 +52,9 @@ inverted_mapping = {v: k for k, v in task_mapping.items()}
 freq = (df
     .groupby(task_col)[wakeup_col]
     .value_counts(sort=False, dropna=False)
-    .rename("frequency")
-    .reset_index(drop=False)
-    .replace({task_col: inverted_mapping})
-    .rename(columns={task_col: "Task"})
+    .unstack(0, fill_value=0)
+    .rename(columns=inverted_mapping)
+    .rename_axis(None, axis=1)
 )
 
 
