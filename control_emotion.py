@@ -17,6 +17,9 @@ import utils
 control_col = "Dream_LUSK"
 emotion_col = "PANAS_neg"
 
+control_label = "Lucid dream control\nLUSK"
+emotion_label = "PANAS\nNegative dream emotion"
+
 control_limits = [1, 5]  # LUSK total min, max values
 emotion_limits = [10, 50]  # PANAS total min and max values
 control_limits[0] -= 0.5
@@ -74,8 +77,8 @@ ax.plot(x, y, "ko", ms=5, alpha=0.2)
 ax.plot(x, poly1d_func(x), "-k")
 
 # Aesthetics.
-ax.set_xlabel(control_col)
-ax.set_ylabel(emotion_col)
+ax.set_xlabel(control_label)
+ax.set_ylabel(emotion_label)
 ax.set_xlim(*control_limits)
 ax.set_ylim(*emotion_limits)
 ax.xaxis.set_major_locator(plt.MultipleLocator(1))

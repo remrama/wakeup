@@ -17,6 +17,9 @@ import utils
 wakeup_col = "Wakeup"
 lucidity_col = "Task_lucid"
 
+wakeup_label = "Time between task and awakening"
+lucidity_label = "Lucidity while performing the task"
+
 # Load custom plotting settings.
 utils.load_matplotlib_settings()
 
@@ -74,8 +77,8 @@ ax.plot(x, poly1d_func(x), "-k")
 # Aesthetics.
 ax.set_xticks(xticks)
 ax.set_yticks(yticks)
-ax.set_xlabel(lucidity_col)
-ax.set_ylabel(wakeup_col)
+ax.set_xlabel(lucidity_label)
+ax.set_ylabel(wakeup_label)
 ax.grid(True, axis="both")
 ax.set_aspect("equal")
 ax.margins(0.1)
