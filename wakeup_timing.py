@@ -103,6 +103,7 @@ yticklabels = []
 
 # Loop over eack task.
 for i, (task, ser) in enumerate(pcts.groupby(task_col)):
+    ## NOTE, this is overcomplicated since there are no gaps in the bars. Should just use barh.
     ser = ser.droplevel(task_col)
     left_adjust = ser.loc[:midpoint-1].sum()
     ser = ser[ser!=0]
@@ -112,12 +113,19 @@ for i, (task, ser) in enumerate(pcts.groupby(task_col)):
     c = [cmap((j-1) / (n_categories-1)) for j in ser.index]
     y = (i - bar_height / 2, bar_height)
     bars = ax.broken_barh(x, y, color=c, linewidth=linewidth, edgecolor=edgecolor)
+    # broken_barh doesn't return BarCollections for ax.bar_label so set manually
+    for k in x:
+        x_ = np.cumsum(k).mean()
+        s = f"{k[1]:.0f}%"
+        c_ = "white" if x_ > 0 else "black"
+        ax.text(x_, i, s, color=c_, ha="center", va="center")
+    # Save yticks on the fly.
     yticks.append(i)
     yticklabels.append(inverted_mapping[task])
 
 # Write stats results.
 beta, pval = stat.loc[1, ["coef", "pval"]]
-utils.vertical_sigbar(ax, y1=yticks[0], y2=yticks[1], x=0.9, p=pval, width=0.02, caplength=None, linewidth=1)
+utils.vertical_sigbar(ax, y1=yticks[0], y2=yticks[1], x=1.04, p=pval, width=0.02, caplength=None, linewidth=1)
 # sigchars = "*" * sum([pval < cutoff for cutoff in (0.05, 0.01, 0.001)])
 # ptxt = r"p<0.001" if pval < .001 else fr"$p={pval:.3f}$"
 # ptxt = ptxt.replace("0.", ".", 1)
@@ -127,15 +135,15 @@ utils.vertical_sigbar(ax, y1=yticks[0], y2=yticks[1], x=0.9, p=pval, width=0.02,
 
 # Aesthetics.
 ax.axvline(0, color="black", linewidth=linewidth, zorder=0)
+ax.margins(x=0)
 xticks_minor = range(-100, 101, 10)
 xticks = range(-100, 101, 50)
 xticklabels = [f"{abs(x)}%" for x in xticks]
-ax.margins(x=0)
 ax.set_xticks(xticks)
 ax.set_xticks(xticks_minor, minor=True)
 ax.set_xticklabels(xticklabels)
 ax.set_ylim(-1, n_tasks)
-ax.set_xlabel("Relative percentage")
+# ax.set_xlabel("Relative percentage")
 ax.set_ylabel("Dream task")
 ax.set_yticks(yticks)
 ytick_longlabels = {
@@ -144,10 +152,11 @@ ytick_longlabels = {
 }
 yticklabels = [ytick_longlabels[k] for k in yticklabels]
 ax.set_yticklabels(yticklabels)
-ax.tick_params(which="both", top=False, right=False)
-ax.grid(False)
-ax.spines[["top", "right"]].set_visible(False)
-ax.spines[["left", "bottom"]].set_position(("outward", 5))
+ax.tick_params(which="both", axis="both", direction="out", top=False, right=False)
+ax.tick_params(which="both", left=False, bottom=False, labelbottom=False)
+# ax.grid(False)
+ax.spines[["top", "right", "bottom", "left"]].set_visible(False)
+# ax.spines["left"].set_position(("outward", 5))
 
 # Legend.
 handles = [

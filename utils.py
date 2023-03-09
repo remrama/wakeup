@@ -182,20 +182,19 @@ def vertical_sigbar(ax, y1, y2, x, p, width=0.1, linewidth=1, caplength=None):
     color = "black" if stars else "gainsboro"
     x_coords = [x - width, x, x, x - width]
     y_coords = [y1, y1, y2, y2]
-    ax.plot(
-        x_coords, y_coords, color=color, linewidth=linewidth, transform=ax.get_yaxis_transform()
+    plot_kwargs = dict(
+        color=color, linewidth=linewidth, transform=ax.get_yaxis_transform(), clip_on=False
     )
+    ax.plot(x_coords, y_coords, **plot_kwargs)
     if caplength is not None:
         for y in [y1, y2]:
             cap_x = [x - width, x - width]
             cap_y = [y - caplength/2, y + caplength/2]
-            ax.plot(
-                cap_x, cap_y, color=color, linewidth=linewidth, transform=ax.get_yaxis_transform()
-            )
+            ax.plot(cap_x, cap_y, **plot_kwargs)
     if stars:
         y_txt = (y1 + y2) / 2
         ax.text(
-            x, y_txt, stars, fontsize=10, color=color,
+            x, y_txt, stars, fontsize=10, color=color, clip_on=False,
             rotation=270, ha="center", va="center", transform=ax.get_yaxis_transform()
         )
 
