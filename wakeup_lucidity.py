@@ -79,6 +79,7 @@ ax.set_ylabel(wakeup_col)
 ax.grid(True, axis="both")
 ax.set_aspect("equal")
 ax.margins(0.1)
+ax.tick_params(direction="out", axis="both", which="both", top=False, right=False)
 
 
 ################################################################################

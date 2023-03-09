@@ -81,6 +81,7 @@ ax.set_ylim(*emotion_limits)
 ax.xaxis.set_major_locator(plt.MultipleLocator(1))
 ax.yaxis.set_major_locator(plt.MultipleLocator(10))
 ax.grid(True, axis="both")
+ax.tick_params(direction="out", axis="both", which="both", top=False, right=False)
 # ax.margins(0.1)
 
 

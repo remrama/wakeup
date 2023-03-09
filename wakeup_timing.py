@@ -154,9 +154,7 @@ yticklabels = [ytick_longlabels[k] for k in yticklabels]
 ax.set_yticklabels(yticklabels)
 ax.tick_params(which="both", axis="both", direction="out", top=False, right=False)
 ax.tick_params(which="both", left=False, bottom=False, labelbottom=False)
-# ax.grid(False)
 ax.spines[["top", "right", "bottom", "left"]].set_visible(False)
-# ax.spines["left"].set_position(("outward", 5))
 
 # Legend.
 handles = [
