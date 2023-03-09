@@ -12,7 +12,7 @@ config = utils.load_config()
 
 # Choose filepaths.
 root_dir = Path(config["root_directory"])
-export_path = root_dir / "derivatives" / "sample_desc.tsv"
+export_path = root_dir / "derivatives" / "demographics.tsv"
 
 # Load data.
 df, meta = utils.load_raw(trim=False)
@@ -44,10 +44,14 @@ freqs = (df
     .value_counts()
     .unstack(0)
     .fillna(0)
-    .astype(int)
     .rename_axis(None, axis=1)
     .rename_axis(["response", "probe"])
+    .pipe(lambda d: d.assign(total=d.sum(axis=1)))
+    .astype(int)
 )
+
+freqs.to_csv(export_path, index=True, na_rep="n/a", sep="\t")
+
 
 # # Messy/lazy concatenation.
 # df_list = [

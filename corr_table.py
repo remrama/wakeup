@@ -42,7 +42,7 @@ columns = [
 
 # Choose filepaths.
 root_dir = Path(config["root_directory"])
-export_path_plot = root_dir / "results" / "inspection.png"
+export_path_plot = root_dir / "results" / "corr_table.png"
 
 # Load data.
 df, meta = utils.load_raw(trim=True)

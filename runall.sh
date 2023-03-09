@@ -8,13 +8,10 @@ set -e
 python source2raw.py
 
 # Describe the sample.
-python sample.py -f age             #=> sample_age.tsv
-python sample.py -f gender          #=> sample_gender.tsv
-python sample.py -f Condition       #=> sample_condition.tsv
-python sample.py -f recruitment     #=> sample_recruitment.tsv
+python demographics.py
 
-# Inspect survey responses.
-python inspection.py
+# Inspect correlated measures.
+python corr_table.py
 
 # Did participants think the wakeup tasks impacted their awakening?
 python wakeup_impact.py
