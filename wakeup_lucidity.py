@@ -56,7 +56,7 @@ stat = pg.corr(x, y, method="kendall")
 
 # Get regression line predictor.
 coef = np.polyfit(x, y, 1)
-poly1d_func = np.poly1d(coef) 
+poly1d_func = np.poly1d(coef)
 
 # Grab ticks and labels from the sidecar file.
 xticks, xticklabels = zip(*meta[wakeup_col]["Levels"].items())

@@ -36,6 +36,7 @@ export_path_stat = root_dir / "derivatives" / "control_emotion-stat.tsv"
 
 # Load data.
 df, meta = utils.load_raw(trim=True)
+# df = df.query("Completed_part2.eq(True)")
 
 # Reduce to only wakeup task conditions.
 df = df.query("Condition != 'Clench'")
@@ -63,7 +64,7 @@ stat = pg.corr(x, y, method="kendall")
 
 # Get regression line predictor.
 coef = np.polyfit(x, y, 1)
-poly1d_func = np.poly1d(coef) 
+poly1d_func = np.poly1d(coef)
 
 # Open figure.
 fig, ax = plt.subplots(figsize=(2, 2))
