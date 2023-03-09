@@ -22,7 +22,7 @@ config = utils.load_config()
 root_dir = Path(config["root_directory"])
 export_path_plot = root_dir / "derivatives" / "wakeup_impact-plot.png"
 export_path_freq = root_dir / "derivatives" / "wakeup_impact-freq.tsv"
-export_path_stat = root_dir / "derivatives" / "wakeup_impact-stat.json"
+export_path_stat = root_dir / "derivatives" / "wakeup_impact-stat.tsv"
 
 # Load data.
 df, meta = utils.load_raw(trim=True)

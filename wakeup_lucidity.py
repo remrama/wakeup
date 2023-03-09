@@ -85,8 +85,8 @@ ax.margins(0.1)
 # EXPORT
 ################################################################################
 
-desc.to_csv(export_path_desc, float_format="%.4f" , na_rep="n/a", sep="\t")
-stat.to_csv(export_path_desc, float_format="%.4f" , na_rep="n/a", sep="\t")
+desc.to_csv(export_path_desc, na_rep="n/a", sep="\t")
+stat.to_csv(export_path_stat, index_label="method", na_rep="n/a", sep="\t")
 plt.savefig(export_path_plot)
 plt.savefig(export_path_plot.with_suffix(".pdf"))
 plt.savefig(export_path_plot.with_suffix(".svg"))
