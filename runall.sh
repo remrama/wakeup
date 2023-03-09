@@ -5,20 +5,22 @@
 set -e
 
 # Clean and aggregate raw Qualtrics output.
-python source2raw.py                #=> derivatives/data.tsv
+python source2raw.py                #=> data.tsv
 
 # Describe the sample.
-python sample.py -f age             #=> results/sample_age.tsv/png
-python sample.py -f gender          #=> results/sample_gender.tsv/png
-python sample.py -f Condition       #=> results/sample_condition.tsv/png
-python sample.py -f recruitment     #=> results/sample_recruitment.tsv/png
+python sample.py -f age             #=> sample_age.tsv
+python sample.py -f gender          #=> sample_gender.tsv
+python sample.py -f Condition       #=> sample_condition.tsv
+python sample.py -f recruitment     #=> sample_recruitment.tsv
 
 # Inspect survey responses.
 python inspection.py                #=> results/inspection.png
 
-# Run chi-squared analyses.
-python chisquared.py -t wakeup      #=> results/chisquared_wakeup.tsv/png
-python chisquared.py -t impact      #=> results/chisquared_impact.tsv/png
+# Did participants think the wakeup tasks impacted their awakening?
+python wakeup_impact.py
+
+# Did participants wake up sooner after the wakeup tasks?
+python wakeup_timing.py
 
 # Visualize baseline LD frequency and wakeup success.
 python plot-baselineXwakeup.py      #=> results/baselineXwakeup.png

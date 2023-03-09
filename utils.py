@@ -14,7 +14,7 @@ def load_config():
     with open("./config.json", "r", encoding="utf-8") as jsonfile:
         return json.load(jsonfile)
 
-def load_raw(import_path_data, trim=False):
+def load_raw(trim=False):
     """Load raw data tsv and sidecar json files.
 
     If `trim` is True, reduce to only participants who completed part 2 and remove excess columns.
@@ -174,7 +174,30 @@ def validate_likert_scales(meta, vars_to_validate):
             assert values == sorted(values), f"{var} scale is not in increasing order. Recode values in Qualtrics and re-export."
             assert not np.any(np.diff(values) != 1), f"{var} scale is not linear. Recode values in Qualtrics and re-export."
 
-
+def vertical_sigbar(ax, y1, y2, x, p, width=0.1, linewidth=1, caplength=None):
+    """significance bar vertical, with hooks to the left.
+    y1, y2 in data coordinates because makes more sense, and x in data_coords
+    """
+    stars = "*" * sum(p < cutoff for cutoff in (0.05, 0.01, 0.001))
+    color = "black" if stars else "gainsboro"
+    x_coords = [x - width, x, x, x - width]
+    y_coords = [y1, y1, y2, y2]
+    ax.plot(
+        x_coords, y_coords, color=color, linewidth=linewidth, transform=ax.get_yaxis_transform()
+    )
+    if caplength is not None:
+        for y in [y1, y2]:
+            cap_x = [x - width, x - width]
+            cap_y = [y - caplength/2, y + caplength/2]
+            ax.plot(
+                cap_x, cap_y, color=color, linewidth=linewidth, transform=ax.get_yaxis_transform()
+            )
+    if stars:
+        y_txt = (y1 + y2) / 2
+        ax.text(
+            x, y_txt, stars, fontsize=10, color=color,
+            rotation=270, ha="center", va="center", transform=ax.get_yaxis_transform()
+        )
 
 def load_matplotlib_settings():
     plt.rcParams["savefig.dpi"] = 1200
@@ -193,7 +216,7 @@ def load_matplotlib_settings():
     plt.rcParams["axes.labelsize"] = 8
     plt.rcParams["xtick.labelsize"] = 8
     plt.rcParams["ytick.labelsize"] = 8
-    plt.rcParams["axes.linewidth"] = 0.8  # edge line width
+    plt.rcParams["axes.linewidth"] = 0.8  # Edge linewidth
     plt.rcParams["axes.axisbelow"] = True
     plt.rcParams["axes.grid"] = True
     plt.rcParams["axes.grid.axis"] = "y"

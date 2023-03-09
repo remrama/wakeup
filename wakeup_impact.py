@@ -1,12 +1,4 @@
 """Run chi2 analysis on subjective reporting of task causing awakening, export table and plot.
-
-- impact analysis is chi2 (not fisher), use power_divergence maybe for simplicity
-- wakeup analysis is linear regression now
-- wakeup analysis gets likert plot now
-- separate script for correlations:
-    - PANAS_neg/Dream_LUSK correlation
-    - Task_lucidity/Wakeup correlation
-- probably remove plot-baselineXwakeup
 """
 from pathlib import Path
 
@@ -18,30 +10,36 @@ from statsmodels.graphics.mosaicplot import mosaic
 import utils
 
 
+################################################################################
+# SETUP
+################################################################################
+
 # Load custom plotting settings.
 utils.load_matplotlib_settings()
 
 # Choose filepaths.
 config = utils.load_config()
 root_dir = Path(config["root_directory"])
-export_path_plot = root_dir / "derivatives" / f"chisquared.png"
-export_path_ctab = export_path_plot.with_suffix(".tsv")
-export_path_stats = export_path_plot.with_suffix(".json")
+export_path_plot = root_dir / "derivatives" / "wakeup_impact-plot.png"
+export_path_freq = root_dir / "derivatives" / "wakeup_impact-freq.tsv"
+export_path_stat = root_dir / "derivatives" / "wakeup_impact-stat.json"
 
 # Load data.
-df, sidecar = utils.load_data_and_sidecar(trim=True)
+df, meta = utils.load_raw(trim=True)
 
+# Reduce to Clench and Visual conditions.
 df = df.query("Condition.isin(['Clench', 'Visual'])")
-
-# ctab = df[[colA, colB]].groupby([colA, colB]).size().unstack().fillna(0)
-
-# Binarize variables used.
-# df["Wakeup"] = df["Wakeup"].le(2)
+# Make sure variables are binarized.
 df["Condition"] = df["Condition"].ne("Clench")
 df["Wakeup_impact"] = df["Wakeup_impact"].eq(2)
 
 COLUMN_A = "Condition"
 COLUMN_B = "Wakeup_impact"
+
+
+################################################################################
+# STATISTICS
+################################################################################
 
 # Remove correction to get integers/counts in `observed` contingency table output.
 expected, observed, stats = pg.chi2_independence(df, COLUMN_A, COLUMN_B, correction=False)
@@ -50,7 +48,7 @@ observed = observed.stack().rename("count")
 
 
 ################################################################################
-# VISUALIZATION SETUP
+# PLOTTING
 ################################################################################
 
 LABELS = {
@@ -82,16 +80,10 @@ palette = {
     LABELS[COLUMN_B][1]: cmap(0.),
 }
 
-props = lambda key: { # ("True", "True") strings(?) tuple in key_order
-    "color": palette[str(key[1])],  # 1 for coloring by column B, 0 for A
+props = lambda key: {  # ("True", "True") strings(?) tuple in key_order
+    "color": palette[str(key[1])],
     "alpha": 1,
 }
-
-
-################################################################################
-# DRAW
-################################################################################
-
 
 # Open figure.
 fig, ax = plt.subplots(figsize=FIGSIZE, gridspec_kw=GRIDSPEC_KW)
@@ -148,7 +140,7 @@ legend = ax.legend(
 legend._legend_box.align = "left"
 
 # Add significance text.
-sigchars = "*" * sum([ pval < cutoff for cutoff in (0.05, 0.01, 0.001) ])
+sigchars = "*" * sum([pval < cutoff for cutoff in (0.05, 0.01, 0.001)])
 ptxt = r"p<0.001" if pval < .001 else fr"$p={pval:.3f}$"
 ptxt = ptxt.replace("0.", ".", 1)
 chi2txt = fr"$\chi^2={chi2val:.1f}$"
@@ -158,7 +150,8 @@ ax.text(
 )
 
 # Export.
-observed.to_csv(export_path_ctab, index=True, na_rep="n/a", sep="\t")
-stats.to_csv(export_path_stats, index=False, na_rep="n/a", sep="\t")
+observed.to_csv(export_path_freq, index=True, na_rep="n/a", sep="\t")
+stats.to_csv(export_path_stat, index=False, na_rep="n/a", sep="\t")
 plt.savefig(export_path_plot)
 plt.savefig(export_path_plot.with_suffix(".pdf"))
+plt.savefig(export_path_plot.with_suffix(".svg"))
