@@ -1,20 +1,9 @@
 """Get some general summary statistics of the whole sample."""
-import argparse
 from pathlib import Path
 
-import matplotlib.pyplot as plt
+import pandas as pd
 
 import utils
-
-
-# Parse command line arguments.
-parser = argparse.ArgumentParser()
-parser.add_argument(
-    "-f", "--feature", type=str, required=True, choices=["age", "gender", "Condition", "recruitment"]
-)
-args = parser.parse_args()
-
-feature = args.feature
 
 
 # Load custom plot settings and grab configuration file.
@@ -23,35 +12,82 @@ config = utils.load_config()
 
 # Choose filepaths.
 root_dir = Path(config["root_directory"])
-export_path_data = root_dir / "derivatives" / f"sample_{feature}.tsv".lower()
-export_path_plot = export_path_data.with_suffix(".png")
+export_path = root_dir / "derivatives" / "sample_desc.tsv"
 
 # Load data.
-df, meta = utils.load_raw(trim=True)
+df, meta = utils.load_raw(trim=False)
 
-# # Drop to final sample.
-# df = df.query("Completed_part2.eq(True)"
-#     ).query("Task_completion.eq(3)")
+# Add a new column that identifies varying levels of study completion.
+def participation_level(row):
+    level = "pt1_finished"
+    if row["Completed_part2"]:
+        level = "pt2_finished"
+    if row["Task_completion"] == 3:
+        level = "pt2_finished_task"
+    return level
+df["completion"] = df.apply(participation_level, axis=1)
 
-
-ser = df[feat].value_counts().rename("count").rename_axis(feature).sort_index()
+# Pick variables to include in frequency table.
+variables = ["age", "gender", "Condition", "recruitment"]
 
 # Get full text labels.
-if feat != "Condition":
-    response_legend = {int(k): v.split(" ")[0] for k, v in meta[feature]["Levels"].items()}
-    ser.index = ser.index.map(response_legend)
+for c in variables:
+    if c != "Condition":
+        response_legend = {int(k): v.split()[0] for k, v in meta[c]["Levels"].items()}
+        df[c] = df[c].map(response_legend)
 
-# Draw plot.
-fig, ax = plt.subplots(figsize=(3.5, 3.5))
-bars = ax.bar(
-    ser.index, ser.values,
-    color="white", edgecolor="black", linewidth=1,
+
+freqs = (df
+    .set_index("completion")[variables]
+    .stack()
+    .groupby(level=[0,1])
+    .value_counts()
+    .unstack(0)
+    .fillna(0)
+    .astype(int)
+    .rename_axis(None, axis=1)
+    .rename_axis(["response", "probe"])
 )
 
-# Aesthetics.
-ax.set_xlabel(feature.capitalize())
-ax.set_ylabel("Count")
+# # Messy/lazy concatenation.
+# df_list = [
+#     (df
+#         .groupby("Completed_part2")[v]
+#         .value_counts()
+#         .unstack(0, fill_value=0)
+#         .rename_axis(None, axis=1)
+#         .rename_axis("response")
+#         .assign(probe=v)
+#         .set_index("probe", append=True)
+#         .swaplevel()
+#     ) for v in variables
+# ]
 
-# Export.
-plt.savefig(export_path_plot)
-ser.to_csv(export_path_data, sep="\t")
+# df = pd.concat(pd.DataFrame(x) for x in df_list)
+
+# desc = (df
+#     .groupby("Completed_part2")[variables].describe()
+#     .stack(0)[["count", "unique", "top", "freq"]]
+#     .reset_index(0)
+#     .rename_axis("variable")
+#     .sort_index()
+# )
+
+# feature = "gender"
+# ser = df[feature].value_counts().rename("count").rename_axis(feature).sort_index()
+
+
+# # Draw plot.
+# fig, ax = plt.subplots(figsize=(3.5, 3.5))
+# bars = ax.bar(
+#     ser.index, ser.values,
+#     color="white", edgecolor="black", linewidth=1,
+# )
+
+# # Aesthetics.
+# ax.set_xlabel(feature.capitalize())
+# ax.set_ylabel("Count")
+
+# # Export.
+# plt.savefig(export_path_plot)
+# ser.to_csv(export_path_data, sep="\t")
