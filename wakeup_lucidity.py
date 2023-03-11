@@ -68,7 +68,7 @@ yticks, yticklabels = zip(*meta[lucidity_col]["Levels"].items())
 yticks = list(map(int, yticks))
 
 # Open figure.
-fig, ax = plt.subplots(figsize=(2, 2))
+fig, ax = plt.subplots(figsize=(2.4, 2.4))
 
 # Draw dots and regression line.
 ax.plot(x, y, "ko", ms=5, alpha=0.2)

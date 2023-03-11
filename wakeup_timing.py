@@ -65,7 +65,7 @@ freq = (df
 probe = "How soon after performing the task did you wake up?"
 probe_labels = ["during", "0-5 seconds", "6-30 seconds", "31-120 seconds", ">120 seconds"]
 
-figsize = (5.5, 2)
+figsize = (5.5, 1.5)
 bar_height = 0.8
 linewidth = 0.5
 edgecolor = "black"
@@ -135,14 +135,14 @@ utils.vertical_sigbar(ax, y1=yticks[0], y2=yticks[1], x=1.04, p=pval, width=0.02
 
 # Aesthetics.
 ax.axvline(0, color="black", linewidth=linewidth, zorder=0)
-ax.margins(x=0)
+ax.margins(x=0, y=0.1)
 xticks_minor = range(-100, 101, 10)
 xticks = range(-100, 101, 50)
 xticklabels = [f"{abs(x)}%" for x in xticks]
 ax.set_xticks(xticks)
 ax.set_xticks(xticks_minor, minor=True)
 ax.set_xticklabels(xticklabels)
-ax.set_ylim(-1, n_tasks)
+# ax.set_ylim(-1, n_tasks)
 # ax.set_xlabel("Relative percentage")
 ax.set_ylabel("Dream task")
 ax.set_yticks(yticks)
@@ -162,15 +162,16 @@ handles = [
         facecolor=cmap((i-1) / (n_categories-1)), label=l, edgecolor=edgecolor, linewidth=linewidth
     ) for i, l in zip(cats, probe_labels)
 ]
-ax.legend(handles=handles,
+legend = ax.legend(handles=handles,
     title=probe,
     loc="lower center", bbox_to_anchor=(0.5, 1),
-    borderaxespad=0, frameon=False,
+    borderaxespad=0.2, frameon=False,
     labelspacing=0.2,  # rowspacing, vertical space between the legend entries
     handletextpad=0.2,  # space between legend marker and label
     # fontsize=8,
     ncol=n_categories,
 )
+legend._legend_box.sep = 5
 
 
 ################################################################################
