@@ -16,7 +16,7 @@ import utils
 # SETUP
 ################################################################################
 
-task_mapping = {"Clench": 0, "Visual": 1}
+task_mapping = {"Clench": 1, "Visual": 0}
 task_col = "Condition"
 wakeup_col = "Wakeup"
 
