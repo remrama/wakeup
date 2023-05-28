@@ -6,13 +6,37 @@ import pandas as pd
 import utils
 
 
-# Load custom plot settings and grab configuration file.
-utils.load_matplotlib_settings()
+################################################################################
+# SETUP
+################################################################################
+
+# Load configuration file.
 config = utils.load_config()
 
 # Choose filepaths.
 root_dir = Path(config["root_directory"])
 export_path = root_dir / "derivatives" / "demographics.tsv"
+export_path_freq = root_dir / "derivatives" / "demographics_freq.tsv"
+
+
+################################################################################
+# DESCRIPTIVE STATISTICS INCLUDING DREAM RECALL FREQUENCY
+################################################################################
+
+# Load trimmed data.
+data, meta = utils.load_raw(trim=True)
+
+columns = [
+    "age", "gender", "Dream_recall", "Nightmare_recall", "Lucid_recall",
+]
+
+desc = data[columns].describe().T
+desc.to_csv(export_path, index_label="variable", na_rep="n/a", sep="\t")
+
+
+################################################################################
+# LONG TABLE WITH FREQUENCIES FOR EACH LIKERT RESPONSE OPTION
+################################################################################
 
 # Load data.
 df, meta = utils.load_raw(trim=False)
@@ -28,14 +52,16 @@ def participation_level(row):
 df["completion"] = df.apply(participation_level, axis=1)
 
 # Pick variables to include in frequency table.
-variables = ["age", "gender", "Condition", "recruitment"]
+variables = [
+    "age", "gender", "Condition", "recruitment",
+    "Dream_recall", "Nightmare_recall", "Lucid_recall",
+]
 
 # Get full text labels.
 for c in variables:
     if c != "Condition":
-        response_legend = {int(k): v.split()[0] for k, v in meta[c]["Levels"].items()}
+        response_legend = {int(k): v for k, v in meta[c]["Levels"].items()}
         df[c] = df[c].map(response_legend)
-
 
 freqs = (df
     .set_index("completion")[variables]
@@ -50,48 +76,4 @@ freqs = (df
     .astype(int)
 )
 
-freqs.to_csv(export_path, index=True, na_rep="n/a", sep="\t")
-
-
-# # Messy/lazy concatenation.
-# df_list = [
-#     (df
-#         .groupby("Completed_part2")[v]
-#         .value_counts()
-#         .unstack(0, fill_value=0)
-#         .rename_axis(None, axis=1)
-#         .rename_axis("response")
-#         .assign(probe=v)
-#         .set_index("probe", append=True)
-#         .swaplevel()
-#     ) for v in variables
-# ]
-
-# df = pd.concat(pd.DataFrame(x) for x in df_list)
-
-# desc = (df
-#     .groupby("Completed_part2")[variables].describe()
-#     .stack(0)[["count", "unique", "top", "freq"]]
-#     .reset_index(0)
-#     .rename_axis("variable")
-#     .sort_index()
-# )
-
-# feature = "gender"
-# ser = df[feature].value_counts().rename("count").rename_axis(feature).sort_index()
-
-
-# # Draw plot.
-# fig, ax = plt.subplots(figsize=(3.5, 3.5))
-# bars = ax.bar(
-#     ser.index, ser.values,
-#     color="white", edgecolor="black", linewidth=1,
-# )
-
-# # Aesthetics.
-# ax.set_xlabel(feature.capitalize())
-# ax.set_ylabel("Count")
-
-# # Export.
-# plt.savefig(export_path_plot)
-# ser.to_csv(export_path_data, sep="\t")
+freqs.to_csv(export_path_freq, index=True, na_rep="n/a", sep="\t")
