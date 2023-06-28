@@ -17,8 +17,8 @@ import utils
 control_col = "Dream_LUSK"
 emotion_col = "PANAS_neg"
 
-control_label = "Lucid dream skills (LUSK)"
-emotion_label = "Negative dream emotion (PANAS)"
+control_label = "Lucid dream skills"
+emotion_label = "Negative dream emotion"
 
 control_limits = [1, 5]  # LUSK total min, max values
 emotion_limits = [10, 50]  # PANAS total min and max values
@@ -70,7 +70,7 @@ coef = np.polyfit(x, y, 1)
 poly1d_func = np.poly1d(coef)
 
 # Open figure.
-fig, ax = plt.subplots(figsize=(2.4, 2.4))
+fig, ax = plt.subplots(figsize=(1.8, 1.8))
 
 # Draw dots and regression line.
 ax.plot(x, y, "ko", ms=8, alpha=0.4)
