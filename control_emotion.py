@@ -17,7 +17,7 @@ import utils
 control_col = "Dream_LUSK"
 emotion_col = "PANAS_neg"
 
-control_label = "Lucid dream control (LUSK)"
+control_label = "Lucid dream skills (LUSK)"
 emotion_label = "Negative dream emotion (PANAS)"
 
 control_limits = [1, 5]  # LUSK total min, max values
